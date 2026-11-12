@@ -83,7 +83,7 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 .pp textarea{margin-top:8px;min-height:44px;font-size:14px}
 .opp{border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:0 0 8px;background:var(--panel)}
 .opp.on{border-color:var(--chance);box-shadow:inset 3px 0 0 var(--chance)}
-.opp-head{display:grid;grid-template-columns:22px 1fr auto;gap:10px;align-items:start}
+.opp-head{display:grid;grid-template-columns:22px 1fr;gap:10px;align-items:start}
 .scores{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px 14px;font-size:13px;color:var(--muted);white-space:nowrap;max-width:330px}
 .scores b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
 .drivers{font-size:13px;color:var(--muted);margin-top:2px}
@@ -192,6 +192,7 @@ function relevanz() {
   }).sort((a, b) => b.wert - a.wert || a.i - b.i).map((o, k) => Object.assign(o, { rang: k + 1 }));
 }
 const PILOT_CHANCEN = { 1: ['GP', 'C2C', 'EE'], 2: ['GSCM'], 3: ['TBM', 'GS', 'SP', 'FS'] };
+const KAT_ORDER = [2, 1, 3, 4, 5, 6, 0];
 const KAT_LOESUNG = [['TBM', 'GS', 'SP'], ['TBM', 'WM'], ['GP', 'C2C', 'EE'], ['GP', 'IS'], ['EE', 'GS', 'SP'], ['GSCM', 'GP'], ['GSCM', 'C2C']];
 function potenzialBranche() {
   const sel = S.branche === 'alle' || S.branche == null ? null : +S.branche;
@@ -278,7 +279,7 @@ function vProfil() {
   return `<h1>Profil und Regulatorik-Screening</h1>
   <div class="panel">
     <label class="field"><span>Unternehmen</span><input type="text" data-act="firma" value="${esc(S.firma)}" placeholder="z. B. BERNINA International AG"></label>
-    <label class="field"><span>Branche</span><select data-act="branche" class="sel"><option value="alle" ${S.branche === 'alle' ? 'selected' : ''}>Alle Branchen (${D.faelle.length} Fälle)</option>${D.branchen.map((b, i) => `<option value="${i}" ${String(S.branche) === String(i) ? 'selected' : ''}>${esc(b)} (${D.faelle.filter((f) => f[0] === i).length} Fälle)</option>`).join('')}</select></label>
+    <label class="field"><span>Branche</span><select data-act="branche" class="sel"><option value="alle" ${S.branche === 'alle' ? 'selected' : ''}>Alle Branchen</option>${D.branchen.map((b, i) => `<option value="${i}" ${String(S.branche) === String(i) ? 'selected' : ''}>${esc(b)}</option>`).join('')}</select></label>
     <div class="sub">Produkt und Markt</div>
     <div class="checks">${box('ee', 'Elektro- oder Elektronikprodukt')}${box('bat', 'Enthält Batterie')}${box('mag', 'Grössere Permanentmagnete')}${box('ohnerep', 'Produktgruppe ohne Ökodesign- oder Reparaturvorgaben')}${box('ch', 'Absatzmarkt Schweiz')}${box('eu', 'Absatzmarkt EU')}</div>
   </div>
@@ -292,7 +293,7 @@ function vProfil() {
 const TYPISCH = ['Datenschutzbedenken', 'Fehlendes kreislauffähiges Design', 'Einschränkende Produktanforderungen', 'Preisaufschlag', 'Begrenzte Ressourcen', 'Ungleiche Marktmacht', 'Kurzfristige, gewinnorientierte Denkweise', 'Keine Bereitschaft zu Zielkonflikten', 'Fehlendes Wissen', 'Fehlende Rückverfolgbarkeit', 'Fragmentierte, unstrukturierte Produktdaten', 'Hoher interner Koordinationsaufwand', 'Komplexe Lebenszyklus-Datenpflege', 'Begrenzte Lieferantendaten', 'Hürden beim Datenaustausch'];
 function vPains() {
   const n = Object.keys(S.pains).length;
-  const cats = D.kategorien.map((k, ki) => {
+  const cats = KAT_ORDER.map((ki) => { const k = D.kategorien[ki];
     const items = D.painpoints.filter((p) => p.kat === ki);
     const sel = items.filter((p) => S.pains[p.id]).length;
     return `<div class="cat"><div class="cat-head"><h3>${esc(k)}</h3><span class="note">${sel} von ${items.length}</span></div>${items.map((p) => {
@@ -330,7 +331,7 @@ function vChancen() {
   const list = W.map((x) => {
     const c = x.c, on = !!S.chancen[c.code], st = S.chancen[c.code];
     const tr = x.treiber.slice(0, 4).map((o) => o.v.kurz).join(', ');
-    return `<div class="opp ${on ? 'on' : ''}"><div class="opp-head"><input type="checkbox" id="c-${c.code}" data-act="chance" data-id="${c.code}" ${on ? 'checked' : ''}><label for="c-${c.code}"><span style="font-weight:600">${on ? esc(cLabel(c.code)) + ' ' : ''}${esc(c.name)}</span> <span class="note">${SEITE[c.seite]}</span><div class="drivers">${tr ? 'Direkte Treiber: ' + esc(tr) : 'Keine direkten Treiber im Profil'}</div>${S.branche !== 'alle' && S.branche != null ? `<div class="drivers">${x.nBranche ? x.nBranche + (x.nBranche === 1 ? ' Fall' : ' Fälle') + ' in der Branche' : 'Keine Fälle in der Branche'}</div>` : ''}</label><div class="scores"><span>Vorschlag <b>${x.vorschlag}</b></span><span>Regulatory Push <b>${x.rueckenwind}</b></span><span>Potenzial <b>${x.pot}</b></span>${x.bPilot ? `<span>Pilotlinie <b>${x.bPilot > 0 ? '+' : '−'}${Math.abs(x.bPilot)}</b></span>` : ''}${x.bPain ? `<span>Pain Points <b>+${x.bPain}</b></span>` : ''}</div></div>
+    return `<div class="opp ${on ? 'on' : ''}"><div class="opp-head"><input type="checkbox" id="c-${c.code}" data-act="chance" data-id="${c.code}" ${on ? 'checked' : ''}><label for="c-${c.code}"><span style="font-weight:600">${on ? esc(cLabel(c.code)) + ' ' : ''}${esc(c.name)}</span> <span class="note">${SEITE[c.seite]}</span><div class="drivers">${tr ? 'Direkte Treiber: ' + esc(tr) : 'Keine direkten Treiber im Profil'}</div></label></div>
     ${on ? `<div class="detail"><label class="field" style="max-width:none;margin:0"><span>Konkret bei ${esc(pn)}</span><textarea data-act="ckonkret" data-id="${c.code}" placeholder="${esc(c.beschreibung)}">${esc(st.konkret || '')}</textarea></label>
     <div class="sliders"><label class="slider">Wirkung<output id="cw-${c.code}">${fmt(st.w)}</output><input type="range" min="1" max="5" step="0.5" value="${st.w}" data-act="cw" data-id="${c.code}"></label><label class="slider">Umsetzbarkeit<output id="cp-${c.code}">${fmt(st.p)}</output><input type="range" min="1" max="5" step="0.5" value="${st.p}" data-act="cp" data-id="${c.code}"></label></div>
     <details><summary class="note" style="cursor:pointer">Hebel für Design for Recycling</summary><ul style="margin:6px 0 0;padding-left:18px;font-size:14px">${c.hebel.map((h) => '<li>' + esc(h) + '</li>').join('')}</ul></details></div>` : ''}</div>`;
@@ -345,7 +346,7 @@ function mapItems() {
   const cs = chanceIds().map((code, i) => { const st = S.chancen[code], c = chById[code]; return { typ: 'c', id: 'C' + (i + 1), kurz: c.name, konkret: st.konkret || c.name, p: st.p, v: st.w }; });
   const ids = painIds(), perKat = {};
   ids.forEach((pid) => { const k = ppById[pid].kat; (perKat[k] = perKat[k] || []).push(pid); });
-  const rs = Object.keys(perKat).map(Number).sort((a, b) => a - b).map((k, i) => {
+  const rs = Object.keys(perKat).map(Number).sort((a, b) => KAT_ORDER.indexOf(a) - KAT_ORDER.indexOf(b)).map((k, i) => {
     const grp = perKat[k], total = D.painpoints.filter((x) => x.kat === k).length;
     const gef = KAT_CHANCEN[k].filter((c) => S.chancen[c]);
     const sev = gef.length ? gef.reduce((sum, c) => sum + S.chancen[c].w, 0) / gef.length : 2;
