@@ -246,7 +246,6 @@ function vProfil() {
   const R = relevanz();
   const rows = R.map((o) => `<tr class="${o.aus ? 'faded' : ''}"><td class="num">${o.rang}</td><td>${esc(o.v.name)}${o.aus ? `<div class="note">${o.bed ? 'Trifft auf das Profil kaum zu' : 'Absatzmarkt nicht gewählt'}</div>` : ''}</td><td class="num" style="white-space:nowrap"><span class="bar" style="width:${o.wert * 0.7}px"></span>${o.wert}</td></tr>`).join('');
   return `<h1>Profil und Regulatorik-Screening</h1>
-  <p class="lead">Das Profil bestimmt, welche Vorgaben das Unternehmen treffen. Die Rangliste rechnet sich sofort neu und treibt später die Vorschläge für die Chancen.</p>
   <div class="panel">
     <label class="field"><span>Unternehmen</span><input type="text" data-act="firma" value="${esc(S.firma)}" placeholder="z. B. BERNINA International AG"></label>
     <div class="sub">Produkt und Markt</div>
@@ -271,7 +270,6 @@ function vPains() {
     }).join('')}</div>`;
   }).join('');
   return `<h1>Pain Points auswählen</h1>
-  <p class="lead">Wählen Sie die wichtigsten Hürden des Unternehmens. Auf der Map werden sie pro Bereich zu einem Risiko gebündelt.</p>
   <div class="toolbar"><span class="note">${n} ausgewählt</span><button class="btn small" type="button" data-act="typisch">Typische Auswahl für Elektronikhersteller vorschlagen</button>${n ? '<button class="btn small ghost" type="button" data-act="painsclear">Auswahl leeren</button>' : ''}</div>
   ${cats}${navRow(1)}`;
 }
@@ -282,7 +280,7 @@ function vLinien() {
   const best = S.linien.length ? Math.max(...S.linien.map(gewichtet)) : null;
   const rows = S.linien.map((l) => `<tr><td><input type="radio" name="pilot" data-act="pilot" data-id="${l.id}" ${S.pilot === l.id ? 'checked' : ''} aria-label="Als Pilotlinie wählen"></td><td><input type="text" data-act="linienname" data-id="${l.id}" value="${esc(l.name)}" placeholder="Name der Produktlinie" style="min-width:160px"></td>${l.s.map((v, i) => `<td class="num"><select data-act="linienwert" data-id="${l.id}" data-i="${i}" aria-label="${KRIT[i][0]}">${[1, 2, 3, 4, 5].map((x) => `<option ${x === v ? 'selected' : ''}>${x}</option>`).join('')}</select></td>`).join('')}<td class="num" data-w="${l.id}" style="font-weight:${gewichtet(l) === best ? 600 : 400}">${fmt(gewichtet(l))}</td><td><button class="btn small ghost" type="button" data-act="liniedel" data-id="${l.id}" aria-label="Linie entfernen">Entfernen</button></td></tr>`).join('');
   return `<h1>Pilotlinie auswählen</h1>
-  <p class="lead">Vergleichen Sie die Produktlinien nach fünf Kriterien von 1 (schwach) bis 5 (stark) und wählen Sie die Linie, mit der Sie beginnen. Empfohlen ist meist die mit dem höchsten gewichteten Wert.</p>
+  <p class="lead">Vergleichen Sie die Produktlinien nach fünf Kriterien von 1 (schwach) bis 5 (stark) und wählen Sie die Linie, mit der Sie beginnen</p>
   <div class="panel"><ul style="margin:0;padding-left:18px;font-size:14px;color:var(--muted)">
   <li><b style="color:var(--ink)">Regulierungsdruck (20 %):</b> Stückzahlen und Länder, in denen die Linie verkauft wird.</li>
   <li><b style="color:var(--ink)">DfR-Hebel (25 %):</b> Ist eine neue Generation in Entwicklung, ist das Design noch änderbar?</li>
@@ -307,7 +305,6 @@ function vChancen() {
     <details><summary class="note" style="cursor:pointer">Hebel für Design for Recycling</summary><ul style="margin:6px 0 0;padding-left:18px;font-size:14px">${c.hebel.map((h) => '<li>' + esc(h) + '</li>').join('')}</ul></details></div>` : ''}</div>`;
   }).join('');
   return `<h1>Chancen ableiten</h1>
-  <p class="lead">Die Geschäftsmodell-Chancen sind nach Vorschlagswert sortiert: Rückenwind aus den Vorgaben Ihres Profils und Potenzial aus 143 Beispielcases. Wählen Sie die passenden aus, beschreiben Sie sie konkret für die Pilotlinie und bewerten Sie Wirkung und Umsetzbarkeit.</p>
   <div class="toolbar"><span class="note">${chanceIds().length} ausgewählt</span><button class="btn small" type="button" data-act="chancentop">Top 7 vorschlagen</button>${chanceIds().length ? '<button class="btn small ghost" type="button" data-act="chancenclear">Auswahl leeren</button>' : ''}</div>
   ${list}${navRow(3)}`;
 }
